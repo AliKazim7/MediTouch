@@ -4,7 +4,7 @@
 
 // React native and others libraries imports
 import React, { Component } from 'react';
-import { ScrollView, LayoutAnimation, UIManager, Linking } from 'react-native';
+import { ScrollView, LayoutAnimation, UIManager, Linking, AsyncStorage } from 'react-native';
 import { View, List, ListItem, Body, Left, Right, Icon, Item, Input, Button, Grid, Col } from 'native-base';
 import { Actions } from 'react-native-router-flux';
 
@@ -63,6 +63,19 @@ export default class SideMenu extends Component {
                   <Icon name="ios-arrow-forward" />
                 </Right>
               </ListItem>
+              <ListItem
+                icon
+                key={1}
+                button={true}
+                onPress={() => this.Logout()}
+              >
+                <Body>
+                  <Text>Log Out</Text>
+                </Body>
+                <Right>
+                  <Icon name="ios-arrow-forward" />
+                </Right>
+              </ListItem>
               {
                 // this.renderMenuItems()
               }
@@ -103,7 +116,17 @@ export default class SideMenu extends Component {
     }
   }
 
+  Logout = async() =>{
+    try{
+      await AsyncStorage.removeItem("userToken")
+      Actions.login()
+    } catch(e){
+      return false
+    }
+  }
+
   // renderMenuItems() {
+
   //   let items = [];
   //   menuItems.map((item, i) => {
   //     items.push(

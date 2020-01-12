@@ -4,10 +4,10 @@
 
 // React native and others libraries imports
 import React, { Component } from 'react';
-import { Image } from 'react-native';
+import { Image, AsyncStorage } from 'react-native';
 import { Container, Content, View, Button, Left, Right, Icon, Card, CardItem, cardBody } from 'native-base';
 import { Actions } from 'react-native-router-flux';
-
+import Firebase from '../Firebase/firebase'
 // Our custom files and classes import
 import Text from '../component/Text';
 import Navbar from '../component/Navbar';
@@ -17,7 +17,50 @@ import CategoryBlock from '../component/CategoryBlock';
 
 
 export default class Home extends Component {
+
+  constructor(props) {
+    super(props);
+    this.state = {
+      email: '',
+      result:[],
+      userdata:'',
+      arrayofMedicin:[]
+    };
+}
+
+  componentDidMount() {
+    this.apiCal()
+    this.apiCals()
+  }
+
+  apiCals = async () =>{
+    const userdata = await AsyncStorage.getItem("userToken");
+    this.setState({
+      userdata: userdata
+    })
+}
+
+  apiCal(){
+    var arr = [];
+    var array = [];
+    const users = Firebase.firestore();
+    const user = users.collection('MedicineList').get().then(querySnapshot =>{
+        const data = querySnapshot.docs.map(doc => doc.data());
+        for(var i = 0; i < data.length; i++){
+            array.push({
+                medicineID:data[i].medicineID,
+                name:data[i].name
+            })
+        }
+        this.setState({
+            result: array
+        })
+    })
+  }
+
   render() {
+    const { result } = this.state;
+    console.log("result data",result)
     var left = (
       <Left style={{flex:1}}>
         <Button onPress={() => this._sideMenuDrawer.open()} transparent>
@@ -40,21 +83,62 @@ export default class Home extends Component {
           <Container>
             <Navbar left={left} right={right} title="MediTouch" />
             <Content>
-              {this.renderCategories()}
+              <CategoryBlock result={result} sendData={this.setValue} />
             </Content>
+            <Button onPress={this.sendData}>
+              <Text style={{color:'white', textAligin:'center',alignItems: 'center'}}>Confirm Order</Text>
+            </Button> 
           </Container>
       </SideMenuDrawer>
     );
   }
 
-  renderCategories() {
+  sendData = async() =>{
+    console.log("array of Medicine", this.state.arrayofMedicin, this.state.userdata)
+    // var database = Firebase.firestore()
+    var db = Firebase.firestore();
+    let userRef = db.collection("orderDetail").add({
+      orderStatus: "Pending",
+      medicineName:this.state.arrayofMedicin,
+      userID: this.state.userdata
+    })
+    .then(resp => {
+      this.addId(resp)
+    })
+  }
+
+  addId = (resp) => {
+    let id = resp.id
+    var db = Firebase.firestore();
+    db.collection("orderDetail").where("userID", '==', this.state.userdata)
+    .get()
+    .then(function(querySnapshot){
+      querySnapshot.forEach(function(doc){
+        db.collection("orderDetail")
+        .doc(doc.id)
+        .update({
+          orderID:id
+        })
+      })
+    }).then(response => this.getData(response))
+  }
+
+  getData(response){
+    console.log("response", response)
+  }
+
+  
+
+  setValue = value =>{
+    console.log("value of medicine data ", value)
+    this.setState({
+      arrayofMedicin: value.name
+    })
+  }
+  renderCategories(result) {
     let cat = [];
-    for(var i=0; i<categories.length; i++) {
-      cat.push(
-        <CategoryBlock key={categories[i].id} id={categories[i].id} image={categories[i].image} title={categories[i].title} />
-      );
-    }
-    return cat;
+    // const result = this.state;
+    <CategoryBlock result={result} />
   }
 
 }

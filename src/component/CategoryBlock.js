@@ -7,34 +7,58 @@ import React, { Component } from 'react';
 import { Image, Dimensions, TouchableOpacity } from 'react-native';
 import { View  } from 'native-base';
 import { Actions } from 'react-native-router-flux';
-
+// import image from ''
 // Our custom files and classes import
 import Text from './Text';
 
 export default class CategoryBlock extends Component {
+  constructor(props) {
+    super(props);
+    this.state = {
+      result: [],
+    };
+}
+  componentDidMount() {
+    console.log("props are category block", this.props)
+
+  }
+
+  componentWillReceiveProps(nextProps){
+    console.log("nexxtProps",nextProps)
+    if(nextProps){
+      this.setState({
+        result: nextProps.result
+      })
+    }
+  }
+
   render() {
     return(
       <View style={{flex:1}}>
-        <TouchableOpacity
-          onPress={this._onPress.bind(this)}
+        {this.state.result.map((item,index)=>(
+          <TouchableOpacity
+          onPress={() => this.onPress(item)}
           activeOpacity={0.9}
         >
-          <View>
-            <Image style={styles.image} source={{uri: this.props.image}} />
-            <View style={styles.overlay} />
-            <View style={styles.border} />
-            <View style={styles.text}>
-              <Text style={styles.title}>{this.props.title}</Text>
-              <Text style={styles.subtitle}>Shop Now</Text>
-            </View>
+          <View key={index}>
+          <Image style={styles.image} source={require('./pills.jpg')} />
+          <View style={styles.overlay} />
+          <View style={styles.border} />
+          <View style={styles.text}>
+            <Text style={styles.title}>{item.name}</Text>
+            <Text style={styles.subtitle}>Add to cart</Text>
           </View>
+            </View>
         </TouchableOpacity>
+        ))}
       </View>
     );
   }
 
-  _onPress() {
-    Actions.category({id: this.props.id, title: this.props.title});
+  onPress = (item) => {
+    console.log("items", item)
+    this.props.sendData(item)
+    // Actions.category({id: this.props.id, title: this.props.title});
   }
 }
 
