@@ -31,6 +31,7 @@ export default class Home extends Component {
   componentDidMount() {
     this.apiCal()
     this.apiCals()
+    console.disableYellowBox = true;
   }
 
   apiCals = async () =>{

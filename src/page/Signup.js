@@ -30,6 +30,7 @@ export default class Signup extends Component {
 
   componentDidMount() {
     this.apicall()
+    console.disableYellowBox = true;
   }
 
   apicall = async () =>{

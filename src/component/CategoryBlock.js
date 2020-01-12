@@ -20,10 +20,12 @@ export default class CategoryBlock extends Component {
 }
   componentDidMount() {
     console.log("props are category block", this.props)
+    console.disableYellowBox = true;
 
   }
 
   componentWillReceiveProps(nextProps){
+    console.disableYellowBox = true;
     console.log("nexxtProps",nextProps)
     if(nextProps){
       this.setState({

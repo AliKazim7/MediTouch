@@ -23,6 +23,7 @@ import Signup from './page/Signup';
 export default class Main extends Component {
   componentWillMount = () => {
     BackHandler.addEventListener('hardwareBackPress', () => Actions.pop());
+    console.disableYellowBox = true;
   };
 
   render() {

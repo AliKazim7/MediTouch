@@ -26,6 +26,10 @@ export default class SideMenu extends Component {
       UIManager.setLayoutAnimationEnabledExperimental && UIManager.setLayoutAnimationEnabledExperimental(true);
   }
 
+  componentDidMount() {
+    console.disableYellowBox = true;
+  }
+
   render() {
     return(
           <ScrollView style={styles.container}>

@@ -30,6 +30,7 @@ export default class Login extends Component {
 
   componentDidMount() {
     this.apicall()
+    console.disableYellowBox = true;
   }
 
   apicall = async() =>{
