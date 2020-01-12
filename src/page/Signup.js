@@ -7,7 +7,7 @@ import React, { Component } from 'react';
 import { ScrollView } from 'react-native';
 import { Container, View, Left, Right, Button, Icon, Item, Input } from 'native-base';
 import { Actions } from 'react-native-router-flux';
-
+import Firebase from '../Firebase/firebase'
 // Our custom files and classes import
 import Colors from '../Colors';
 import Text from '../component/Text';
@@ -27,6 +27,7 @@ export default class Signup extends Component {
       };
   }
 
+  
 
   render() {
     var left = (
@@ -87,7 +88,7 @@ export default class Signup extends Component {
     );
   }
 
-  signup() {
+  signup = async() => {
     if(this.state.email===""||this.state.name===""||this.state.username===""||this.state.password===""||this.state.rePassword==="") {
       this.setState({hasError: true, errorText: 'Please fill all fields !'});
       return;
@@ -109,7 +110,35 @@ export default class Signup extends Component {
       return;
     }
     this.setState({hasError: false});
-    Actions.home();
+    var db = Firebase.firestore();
+    let userRef = db.collection("Users").add({
+      email: this.state.email,
+      password: this.state.password,
+      username: this.state.username,
+      name: this.state.name
+    })
+    .then(resp => this.getResponse(resp))
+  }
+
+  getResponse(resp){
+    let id = resp.id
+    var db = Firebase.firestore();
+    db.collection("Users").where("email", '==', this.state.email)
+    .get()
+    .then(function(querySnapshot){
+      querySnapshot.forEach(function(doc){
+        db.collection("Users")
+        .doc(doc.id)
+        .update({
+          userID:id
+        })
+      })
+    }).then(response => this.getData(response))
+  }
+
+  getData(response){
+    console.log("response,", response)
+    Actions.home()
   }
 
   verifyEmail(email) {
