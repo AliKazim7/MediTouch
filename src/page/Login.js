@@ -107,9 +107,7 @@ export default class Login extends Component {
    var database = Firebase.firestore();
    database.collection("Users").where("email", '==', this.state.email).get().then(snapshot =>{
      if(snapshot.empty){
-      //  this.setState({
-
-      //  })
+       console.log("no email registered")
      } else {
        this.apiResponse(snapshot)
      }

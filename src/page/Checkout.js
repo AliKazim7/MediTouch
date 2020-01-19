@@ -13,6 +13,7 @@ import { Actions } from 'react-native-router-flux';
 import Colors from '../Colors';
 import Text from '../component/Text';
 import Navbar from '../component/Navbar';
+import Firebase from '../Firebase/firebase';
 
 export default class Checkout extends Component {
   constructor(props) {
@@ -29,23 +30,25 @@ export default class Checkout extends Component {
         address: '',
         city: '',
         postcode: '',
-        note: ''
+        note: '',
+        arrayofMedicin:[]
       };
   }
 
   componentWillMount() {
     this.setState({cartItems: this.props.cartItems});
+    var total = 0;
+    const { arrayofMedicin } = this.state;
     this.props.cartItems.map((item) => {
-      var total = 0;
-      total += parseFloat(item.price) * parseInt(item.quantity);
-      this.setState({total: total});
+      arrayofMedicin.push(item.name)
     });
+    this.setState({total: total, arrayofMedicin: arrayofMedicin});
   }
 
   render() {
     var left = (
       <Left style={{flex:1}}>
-        <Button onPress={() => Actions.pop()} transparent>
+        <Button  transparent>
           <Icon name='ios-arrow-back' />
         </Button>
       </Left>
@@ -97,7 +100,23 @@ export default class Checkout extends Component {
           <Text style={{marginTop: 15, fontSize: 18}}>Your order</Text>
           <View style={styles.invoice}>
             <List>
-                {this.renderItems()}
+                {this.state.cartItems.map((item, i) => (
+                    <ListItem
+                      key={i}
+                      style={{marginLeft: 0}}
+                    >
+                      <Body style={{paddingLeft: 10}}>
+                        <Text style={{fontSize: 18}}>
+                          {item.quantity > 1 ? item.quantity+"1 " : null}
+                          {item.name}
+                        </Text>
+                      </Body>
+                      <Right>
+                        <Text style={{fontSize: 16, fontWeight: 'bold', marginBottom: 10}}>{item.price}</Text>
+                      </Right>
+                    </ListItem>
+                  
+                ))}
             </List>
             <View style={styles.line} />
             <Grid style={{paddingLeft: 10, paddingRight: 10, marginTop: 7}}>
@@ -108,24 +127,6 @@ export default class Checkout extends Component {
                 <Text style={{textAlign: 'right', fontSize: 18, fontWeight: 'bold'}}>{this.state.total+"$"}</Text>
               </Col>
             </Grid>
-          </View>
-          <View>
-            <Text style={{marginTop: 15, marginBottom: 7, fontSize: 18}}>Payement method</Text>
-            <ListItem style={{borderWidth: 1, borderColor: 'rgba(149, 165, 166, 0.3)', paddingLeft: 10, marginLeft: 0}}>
-              <Text>Pay with card</Text>
-              <FAIcon name="cc-mastercard" size={20} color="#c0392b" style={{marginLeft: 7}} />
-              <FAIcon name="cc-visa" size={20} color="#2980b9" style={{marginLeft: 2}} />
-              <Right>
-                <Radio selected={this.state.card} onPress={() => this.setState({card: true, paypal: false})} />
-              </Right>
-            </ListItem>
-            <ListItem style={{borderWidth: 1, borderColor: 'rgba(149, 165, 166, 0.3)', paddingLeft: 10, marginLeft: 0, borderTopWidth: 0}}>
-              <Text>Pay with Paypal</Text>
-              <FAIcon name="cc-paypal" size={20} color="#34495e" style={{marginLeft: 7}} />
-              <Right>
-                <Radio selected={this.state.paypal} onPress={() => this.setState({card: false, paypal: true})} />
-              </Right>
-            </ListItem>
           </View>
           <View style={{marginTop: 10, marginBottom: 10, paddingBottom: 7}}>
             <Button onPress={() => this.checkout()} style={{backgroundColor: Colors.navbarBackgroundColor}} block iconLeft>
@@ -165,8 +166,41 @@ export default class Checkout extends Component {
 
   checkout() {
     console.log(this.state);
-    alert("Check the log");
+    console.log('medicine names', this.state.arrayofMedicin)
+    const db = Firebase.firestore()
+    let userRef = db.collection("orderDetail").add({
+      orderStatus: "Pending",
+      userName:this.state.name,
+      userEmail:this.state.email,
+      medicineName:this.state.arrayofMedicin,
+      userID: this.state.email
+    })
+    .then(resp => {
+      this.addId(resp)
+    })
   }
+
+  addId = (resp) => {
+    let id = resp.id
+    var db = Firebase.firestore();
+    db.collection("orderDetail").where("userID", '==', this.state.email)
+    .get()
+    .then(function(querySnapshot){
+      querySnapshot.forEach(function(doc){
+        db.collection("orderDetail")
+        .doc(doc.id)
+        .update({
+          orderID:id
+        })
+      })
+    }).then(response => this.getData(response))
+  }
+
+  getData(response){
+    console.log("response", response)
+    Actions.home()
+  }
+
 
 }
 

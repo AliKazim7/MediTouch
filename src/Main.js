@@ -8,17 +8,17 @@ import { Scene, Router, Actions } from 'react-native-router-flux';
 import Home from './page/Home';
 import initialPage from './page/initialPage'
 // import Search from './page/Search';
-// import Cart from './page/Cart';
-// import WishList from './page/WishList';
-// import Map from './page/Map';
-// import Newsletter from './page/Newsletter';
-// import Contact from './page/Contact';
-// import Category from './page/Category';
-// import Product from './page/Product';
+import Cart from './page/Cart';
+import WishList from './page/WishList';
+import Newsletter from './page/Newsletter';
+import Contact from './page/Contact';
+import Category from './page/Category';
+import Product from './page/Product';
 // import ImageGallery from './page/ImageGallery';
 import Login from './page/Login';
 import Signup from './page/Signup';
-// import Checkout from './page/Checkout';
+import CurrentOrder from './page/CurrentOrder'
+import Checkout from './page/Checkout';
 
 export default class Main extends Component {
   componentWillMount = () => {
@@ -34,7 +34,11 @@ export default class Main extends Component {
             <Scene initial key="home" component={Home} hideNavBar />
             <Scene key="login" component={Login} hideNavBar />
             <Scene key="signup" component={Signup} hideNavBar />
+            <Scene key="cart" component={Cart} hideNavBar />
             <Scene key="initialPage" component={initialPage} hideNavBar />
+            <Scene key="approvedOrder" component={CurrentOrder} hideNavBar />
+            <Scene key="checkout" component={Checkout} hideNavBar />
+            <Scene key="product" component={Product} hideNavBar />
           </Scene>
         </Router>
       </Root>

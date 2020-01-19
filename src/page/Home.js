@@ -23,6 +23,7 @@ export default class Home extends Component {
     this.state = {
       email: '',
       result:[],
+      isApproved: false,
       userdata:'',
       arrayofMedicin:[]
     };
@@ -39,6 +40,24 @@ export default class Home extends Component {
     this.setState({
       userdata: userdata
     })
+     const users = Firebase.firestore();
+     users.collection('orderDetail').where('userID','==',userdata).get().then(snapshot =>{
+     if(snapshot.empty){
+       console.log("no email registered")
+     } else {
+       const data = snapshot.docs.map(doc => doc.data())
+       data.forEach(approve=> {
+         if(approve.orderStatus === 'Approved'){
+           this.setState({
+             isApproved: true,
+             orderDetail: data
+           })
+         }
+       })
+       
+     }
+   })
+   
 }
 
   apiCal(){
@@ -74,9 +93,17 @@ export default class Home extends Component {
         <Button onPress={() => Actions.search()} transparent>
           <Icon name='ios-search' />
         </Button>
-        <Button onPress={() => Actions.cart()} transparent>
+        {
+          this.state.isApproved
+          ?
+          <Button onPress={() => Actions.approvedOrder()} transparent>
           <Icon name='ios-cart' />
-        </Button>
+          </Button>
+          :
+          <Button onPress={() => Actions.cart()} transparent>
+          <Icon style={{color:'red'}} name='ios-cart' />
+          </Button>
+        }
       </Right>
     );
     return(
@@ -86,9 +113,6 @@ export default class Home extends Component {
             <Content>
               <CategoryBlock result={result} sendData={this.setValue} />
             </Content>
-            <Button onPress={this.sendData}>
-              <Text style={{color:'white', textAligin:'center',alignItems: 'center'}}>Confirm Order</Text>
-            </Button> 
           </Container>
       </SideMenuDrawer>
     );

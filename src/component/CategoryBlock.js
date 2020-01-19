@@ -37,22 +37,32 @@ export default class CategoryBlock extends Component {
   render() {
     return(
       <View style={{flex:1}}>
-        {this.state.result.map((item,index)=>(
-          <TouchableOpacity
-          onPress={() => this.onPress(item)}
-          activeOpacity={0.9}
-        >
-          <View key={index}>
-          <Image style={styles.image} source={require('./pills.jpg')} />
-          <View style={styles.overlay} />
-          <View style={styles.border} />
-          <View style={styles.text}>
-            <Text style={styles.title}>{item.name}</Text>
-            <Text style={styles.subtitle}>Add to cart</Text>
-          </View>
-            </View>
-        </TouchableOpacity>
-        ))}
+      <TouchableOpacity
+      onPress={() => Actions.cart()}
+      activeOpacity={0.9}
+    >
+      <View>
+      <Image style={styles.image} source={require('./pills.jpg')} />
+      <View style={styles.overlay} />
+      <View style={styles.border} />
+      <View style={styles.text}>
+        <Text style={styles.subtitle}>Buy Medicines</Text>
+      </View>
+        </View>
+    </TouchableOpacity>
+    <TouchableOpacity
+      onPress={() => Actions.approvedOrder()}
+      activeOpacity={0.9}
+    >
+      <View>
+      <Image style={styles.image} source={require('./pills.jpg')} />
+      <View style={styles.overlay} />
+      <View style={styles.border} />
+      <View style={styles.text}>
+        <Text style={styles.subtitle}>Check your Order</Text>
+      </View>
+        </View>
+    </TouchableOpacity>
       </View>
     );
   }

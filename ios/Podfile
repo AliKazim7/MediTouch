@@ -34,6 +34,9 @@ target 'mediTouch' do
   pod 'glog', :podspec => '../node_modules/react-native/third-party-podspecs/glog.podspec'
   pod 'Folly', :podspec => '../node_modules/react-native/third-party-podspecs/Folly.podspec'
 
+  pod 'react-native-document-picker', :path => '../node_modules/react-native-document-picker'
+
+
   target 'mediTouchTests' do
     inherit! :search_paths
     # Pods for testing

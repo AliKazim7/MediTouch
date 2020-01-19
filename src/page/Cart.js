@@ -4,21 +4,62 @@
 
 // React native and others libraries imports
 import React, { Component } from 'react';
-import { Alert, AsyncStorage } from 'react-native';
+import { Alert, AsyncStorage,TouchableOpacity, ActivityIndicator } from 'react-native';
 import { Container, Content, View, Header, Icon, Button, Left, Right, Body, Title, List, ListItem, Thumbnail, Grid, Col } from 'native-base';
 import { Actions } from 'react-native-router-flux';
-
+import 'firebase/storage'
+// import DocumentPicker  from 'react-native-document-picker'
 // Our custom files and classes import
 import Colors from '../Colors';
 import Text from '../component/Text';
 import Navbar from '../component/Navbar';
-
+import Firebase from '../Firebase/firebase';
+import DocumentPicker from 'react-native-document-picker';
+import storage from '../Firebase/storagefirebase'
 export default class Cart extends Component {
   constructor(props) {
       super(props);
       this.state = {
-        cartItems: []
+        cartItems: [],
+        userdata:'',
+        showfile: false,
+        singleFile:'',
+        showLoader: false,
+        medicineData:[]
       };
+  }
+
+
+  componentDidMount () {
+    this.apicall()
+  }
+
+  apicall = async() =>{
+    const userdata = await AsyncStorage.getItem("userToken");
+    console.log("userData", userdata)
+    this.setState({
+      userdata: userdata,
+      showLoader: true
+    })
+    var array = [];
+    const users = Firebase.firestore();
+    const user = users.collection('MedicineList').get().then(querySnapshot =>{
+        const data = querySnapshot.docs.map(doc => doc.data());
+        for(var i = 0; i < data.length; i++){
+            array.push({
+                medicineID:data[i].medicineID,
+                name:data[i].name,
+                manufacture:data[i].manufacture,
+                price:data[i].price,
+                quantity:data[i].quantity
+            })
+        }
+        this.setState({
+          cartItems: array,
+          showfile: false,
+          showLoader: false
+        })
+    })
   }
 
   componentWillMount() {
@@ -29,6 +70,8 @@ export default class Cart extends Component {
   }
 
   render() {
+    console.log("this.state.cartiem", this.state.cartItems)
+    console.log("selected medicine", this.state.medicineData)
     var left = (
       <Left style={{flex:1}}>
         <Button transparent onPress={() => Actions.pop()}>
@@ -38,17 +81,66 @@ export default class Cart extends Component {
     );
     return(
       <Container style={{backgroundColor: '#fdfdfd'}}>
-          <Navbar left={left} title="MY CART" />
-          {this.state.cartItems.length <=0 ?
+          {this.state.showLoader ? <ActivityIndicator /> : null}
+          <Navbar left={left} title="Medicine List" />
+          {this.state.showfile ?
             <View style={{flex: 1, justifyContent: 'center', alignItems: 'center'}}>
-              <Icon name="ios-cart" size={38} style={{fontSize: 38, color: '#95a5a6', marginBottom: 7}} />
-              <Text style={{color: '#95a5a6'}}>Your cart is empty</Text>
+            <Text style={styles.textStyle}>
+            File Name:{' '}
+            {this.state.singleFile.name ? this.state.singleFile.name : ''}
+           </Text>
+           <Button success onPress={this.addData}>
+            <Text style={{color:'white'}}>Add to cart</Text>
+            </Button>
             </View>
             :
             <Content style={{paddingRight: 10}}>
               <List>
-                  {this.renderItems()}
+                  {this.state.cartItems.map((item,index)=>(
+                        <ListItem
+                          key={index}
+                          last={this.state.cartItems.length === index+1}
+                          onPress={() => this.itemClicked(item)}
+                        >
+                          <Body style={{paddingLeft: 10}}>
+                            <Text style={{fontSize: 18}}>
+                              {item.name}
+                            </Text>
+                            <Text style={{fontSize: 14}}>
+                              {item.price}
+                            </Text>
+                            <Text style={{fontSize: 14}}>
+                              {item.manufacture}
+                            </Text>
+                          </Body>
+                        </ListItem>
+                    
+                  ))}
               </List>
+              <Grid style={{marginTop: 20, marginBottom: 10}}>
+                <Col style={{paddingLeft: 10,paddingRight: 5}}>
+                <TouchableOpacity
+                activeOpacity={0.5}
+                style={styles.buttonStyle}
+                onPress={() =>this.selectOneFile()}>
+                {/*Single file selection button*/}
+                <Text style={{ marginRight: 10, fontSize: 19 }}>
+                  Click here to pick one file
+                </Text>
+                
+              </TouchableOpacity>
+                </Col>
+              </Grid>
+              
+              <Grid style={{marginTop: 20, marginBottom: 10}}>
+                <Col style={{paddingLeft: 10,paddingRight: 5}}>
+                <Text style={{ marginRight: 10, fontSize: 19 }}>
+                  OR
+                </Text>
+                
+                </Col>
+              </Grid>
+
               <Grid style={{marginTop: 20, marginBottom: 10}}>
                 <Col style={{paddingLeft: 10,paddingRight: 5}}>
                   <Button onPress={() => this.checkout()} style={{backgroundColor: Colors.navbarBackgroundColor}} block iconLeft>
@@ -56,12 +148,7 @@ export default class Cart extends Component {
                     <Text style={{color: '#fdfdfd'}}>Checkout</Text>
                   </Button>
                 </Col>
-                <Col style={{paddingLeft: 5, paddingRight: 10}}>
-                  <Button onPress={() => this.removeAllPressed()} style={{borderWidth: 1, borderColor: Colors.navbarBackgroundColor}} block iconRight transparent>
-                    <Text style={{color: Colors.navbarBackgroundColor}}>Emtpy Cart</Text>
-                    <Icon style={{color: Colors.navbarBackgroundColor}} name='ios-trash-outline' />
-                  </Button>
-                </Col>
+                
               </Grid>
             </Content>
           }
@@ -69,33 +156,108 @@ export default class Cart extends Component {
     );
   }
 
+  addData = () =>{
+    console.log("data added", this.state.singleFile)
+    this.setState({
+      showLoader: true
+    })
+    const database = Firebase.firestore()
+    const db = Firebase.firestore()
+    let userRef = db.collection("orderDetail").add({
+      orderStatus: "Pending",
+      medicineName:this.state.singleFile.uri,
+      userID: this.state.userdata
+    })
+    .then(resp => {
+      this.addId(resp)
+    })
+    // const database = Firebase.storage()
+    // const uploadTask = database.ref(`users/${this.state.singleFile.name}`).put(this.state.singleFile.uri);
+    // uploadTask.on(
+    //   "state_changed",
+    //   snapshot => {
+    //     // progrss function ....
+    //     const progress = Math.round(
+    //       (snapshot.bytesTransferred / snapshot.totalBytes) * 100
+    //     );
+    //     this.setState({ progress });
+    //   },
+    //   error => {
+    //     // error function ....
+    //     console.log(error);
+    //   },
+    //   () => {
+    //     // complete function ....
+    //     storage
+    //       .ref()
+    //       .child()
+    //       .getDownloadURL()
+    //       .then(url => {
+    //         console.log(url);
+    //         this.setState({ url: url, isDisabled: false, showLoader: false });
+    //       });
+    //   }
+    // );
+  }
+
+  addId = (resp) => {
+    let id = resp.id
+    var db = Firebase.firestore();
+    db.collection("orderDetail").where("userID", '==', this.state.userdata)
+    .get()
+    .then(function(querySnapshot){
+      querySnapshot.forEach(function(doc){
+        db.collection("orderDetail")
+        .doc(doc.id)
+        .update({
+          orderID:id
+        })
+      })
+    }).then(response => this.getData(response))
+  }
+
+  getData(response){
+    console.log("response", response)
+    Actions.home()
+  }
+
+  selectOneFile = async() => {
+    console.log("here")
+    //Opening Document Picker for selection of one file
+    try {
+      const res = await DocumentPicker.pick({
+        type: [DocumentPicker.types.allFiles],
+        //There can me more options as well
+        // DocumentPicker.types.allFiles
+        // DocumentPicker.types.images
+        // DocumentPicker.types.plainText
+        // DocumentPicker.types.audio
+        // DocumentPicker.types.pdf
+      });
+      //Printing the log realted to the file
+      console.log('res : ' + JSON.stringify(res));
+      console.log('URI : ' + res.uri);
+      console.log('Type : ' + res.type);
+      console.log('File Name : ' + res.name);
+      console.log('File Size : ' + res.size);
+      //Setting the state to show single file attributes
+      this.setState({ singleFile: res, showfile:true });
+    } catch (err) {
+      //Handling any exception (If any)
+      if (DocumentPicker.isCancel(err)) {
+        //If user canceled the document selection
+        alert('Canceled from single doc picker');
+      } else {
+        //For Unknown Error
+        alert('Unknown Error: ' + JSON.stringify(err));
+        throw err;
+      }
+    }
+  }
+
   renderItems() {
     let items = [];
-    this.state.cartItems.map((item, i) => {
-      items.push(
-        <ListItem
-          key={i}
-          last={this.state.cartItems.length === i+1}
-          onPress={() => this.itemClicked(item)}
-        >
-          <Thumbnail square style={{width: 110, height: 90}} source={{ uri: item.image }} />
-          <Body style={{paddingLeft: 10}}>
-            <Text style={{fontSize: 18}}>
-              {item.quantity > 1 ? item.quantity+"x " : null}
-              {item.title}
-            </Text>
-            <Text style={{fontSize: 16, fontWeight: 'bold', marginBottom: 10}}>{item.price}</Text>
-            <Text style={{fontSize: 14 ,fontStyle: 'italic'}}>Color: {item.color}</Text>
-            <Text style={{fontSize: 14 ,fontStyle: 'italic'}}>Size: {item.size}</Text>
-          </Body>
-          <Right>
-            <Button style={{marginLeft: -25}} transparent onPress={() => this.removeItemPressed(item)}>
-              <Icon size={30} style={{fontSize: 30, color: '#95a5a6'}} name='ios-remove-circle-outline' />
-            </Button>
-          </Right>
-        </ListItem>
-      );
-    });
+    
     return items;
   }
 
@@ -137,11 +299,15 @@ export default class Cart extends Component {
   }
 
   checkout() {
-    Actions.checkout({cartItems: this.state.cartItems});
+    Actions.checkout({cartItems: this.state.medicineData});
   }
 
   itemClicked(item) {
-    Actions.product({product: item});
+    const { medicineData } = this.state;
+    medicineData.push(item)
+    this.setState({
+      medicineData:medicineData
+    })
   }
 
 }
