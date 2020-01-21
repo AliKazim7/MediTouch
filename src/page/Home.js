@@ -32,7 +32,32 @@ export default class Home extends Component {
   componentDidMount() {
     this.apiCal()
     this.apiCals()
+    this.apicall()
     console.disableYellowBox = true;
+  }
+
+  apicall = async() =>{
+    const userdata = await AsyncStorage.getItem("userToken");
+    this.setState({
+      userdata: userdata
+    })
+     const users = Firebase.firestore();
+     users.collection('orderPres').where('userID','==',userdata).get().then(snapshot =>{
+     if(snapshot.empty){
+       console.log("no email registered")
+     } else {
+       const data = snapshot.docs.map(doc => doc.data())
+       data.forEach(approve=> {
+         if(approve.orderStatus === 'Approved'){
+           this.setState({
+             isApproved: true,
+             orderPres: data
+           })
+         }
+       })
+       
+     }
+   })
   }
 
   apiCals = async () =>{

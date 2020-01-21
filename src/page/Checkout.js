@@ -139,40 +139,16 @@ export default class Checkout extends Component {
     );
   }
 
-  renderItems() {
-    let items = [];
-    this.state.cartItems.map((item, i) => {
-      items.push(
-        <ListItem
-          key={i}
-          style={{marginLeft: 0}}
-        >
-          <Body style={{paddingLeft: 10}}>
-            <Text style={{fontSize: 18}}>
-              {item.quantity > 1 ? item.quantity+"x " : null}
-              {item.title}
-            </Text>
-            <Text style={{fontSize: 14 ,fontStyle: 'italic'}}>Color: {item.color}</Text>
-            <Text style={{fontSize: 14 ,fontStyle: 'italic'}}>Size: {item.size}</Text>
-          </Body>
-          <Right>
-            <Text style={{fontSize: 16, fontWeight: 'bold', marginBottom: 10}}>{item.price}</Text>
-          </Right>
-        </ListItem>
-      );
-    });
-    return items;
-  }
-
   checkout() {
     console.log(this.state);
     console.log('medicine names', this.state.arrayofMedicin)
+    let medName = this.state.arrayofMedicin.join(',')
     const db = Firebase.firestore()
     let userRef = db.collection("orderDetail").add({
       orderStatus: "Pending",
       userName:this.state.name,
       userEmail:this.state.email,
-      medicineName:this.state.arrayofMedicin,
+      medicineName:medName,
       userID: this.state.email
     })
     .then(resp => {

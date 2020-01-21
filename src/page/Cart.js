@@ -15,6 +15,7 @@ import Text from '../component/Text';
 import Navbar from '../component/Navbar';
 import Firebase from '../Firebase/firebase';
 import DocumentPicker from 'react-native-document-picker';
+import FileViewer from 'react-native-file-viewer'
 import storage from '../Firebase/storagefirebase'
 export default class Cart extends Component {
   constructor(props) {
@@ -24,6 +25,7 @@ export default class Cart extends Component {
         userdata:'',
         showfile: false,
         singleFile:'',
+        url:'',
         showLoader: false,
         medicineData:[]
       };
@@ -88,6 +90,7 @@ export default class Cart extends Component {
             <Text style={styles.textStyle}>
             File Name:{' '}
             {this.state.singleFile.name ? this.state.singleFile.name : ''}
+            
            </Text>
            <Button success onPress={this.addData}>
             <Text style={{color:'white'}}>Add to cart</Text>
@@ -156,58 +159,83 @@ export default class Cart extends Component {
     );
   }
 
-  addData = () =>{
+  addData = async () =>{
     console.log("data added", this.state.singleFile)
-    this.setState({
-      showLoader: true
+    let uri = this.state.singleFile.uri
+    var result = await this.uriToBlob(uri)
+    console.log("resulted value", result)
+    var storageRef = Firebase.storage().ref();
+    storageRef.child(`users/${this.state.singleFile.name}`).put(result)
+    .then(snapshot =>{
+      // console.log("snapShot",snapshot)
+      this.dataResponse(snapshot)
     })
-    const database = Firebase.firestore()
-    const db = Firebase.firestore()
-    let userRef = db.collection("orderDetail").add({
-      orderStatus: "Pending",
-      medicineName:this.state.singleFile.uri,
-      userID: this.state.userdata
+  }
+
+  dataResponse(data){
+    var storageRef = Firebase.storage().ref();
+    storageRef.child(`users/${this.state.singleFile.name}`).getDownloadURL().then(url =>{
+      console.log("url data", url)
+      this.addFile(url)
     })
-    .then(resp => {
-      this.addId(resp)
-    })
-    // const database = Firebase.storage()
-    // const uploadTask = database.ref(`users/${this.state.singleFile.name}`).put(this.state.singleFile.uri);
-    // uploadTask.on(
-    //   "state_changed",
-    //   snapshot => {
-    //     // progrss function ....
-    //     const progress = Math.round(
-    //       (snapshot.bytesTransferred / snapshot.totalBytes) * 100
-    //     );
-    //     this.setState({ progress });
-    //   },
-    //   error => {
-    //     // error function ....
-    //     console.log(error);
-    //   },
-    //   () => {
-    //     // complete function ....
-    //     storage
-    //       .ref()
-    //       .child()
-    //       .getDownloadURL()
-    //       .then(url => {
-    //         console.log(url);
-    //         this.setState({ url: url, isDisabled: false, showLoader: false });
-    //       });
+    // .then(
+    //   resp => {
+    //     this.addFile()
     //   }
-    // );
+    // )
+    // storageRef().ref('users').child(this.state.singleFile.name).getDownloadURL().then(url =>{
+    //   console.log("url", url)
+    // })
+  }
+
+  addFile = (url) =>{
+    const db = Firebase.firestore()
+    let userRef = db.collection("orderPres").add({
+      orderStatus: "Pending",
+      userName:this.state.userdata,
+      medicineName:url,
+      userID: this.state.userdata
+     })
+     .then(res => {
+       this.addId(res)
+     })
+  }
+
+  uriToBlob = (uri) => {
+    console.log("uri to blob")
+    return new Promise((resolve, reject) => {
+
+      const xhr = new XMLHttpRequest();
+
+      xhr.onload = function() {
+        // return the blob
+        resolve(xhr.response);
+      };
+      
+      xhr.onerror = function() {
+        // something went wrong
+        reject(new Error('uriToBlob failed'));
+      };
+
+      // this helps us get a blob
+      xhr.responseType = 'blob';
+
+      xhr.open('GET', uri, true);
+      xhr.send(null);
+
+    });
+
   }
 
   addId = (resp) => {
     let id = resp.id
+     
     var db = Firebase.firestore();
-    db.collection("orderDetail").where("userID", '==', this.state.userdata)
+    db.collection("orderPres").where("userID", '==', this.state.userdata)
     .get()
     .then(function(querySnapshot){
       querySnapshot.forEach(function(doc){
-        db.collection("orderDetail")
+        db.collection("orderPres")
         .doc(doc.id)
         .update({
           orderID:id
@@ -234,6 +262,11 @@ export default class Cart extends Component {
         // DocumentPicker.types.audio
         // DocumentPicker.types.pdf
       });
+      if(res){
+        FileViewer.open(res.uri).then(()=>{
+
+        })
+      }
       //Printing the log realted to the file
       console.log('res : ' + JSON.stringify(res));
       console.log('URI : ' + res.uri);

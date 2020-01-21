@@ -8,6 +8,7 @@ import { Alert, AsyncStorage } from 'react-native';
 import { Container, Content, View, Header, Icon, Button, Left, Right, Body, Title, List, ListItem, Thumbnail, Grid, Col } from 'native-base';
 import { Actions } from 'react-native-router-flux';
 
+import FileViewer from 'react-native-file-viewer'
 // Our custom files and classes import
 import Colors from '../Colors';
 import Text from '../component/Text';
@@ -71,6 +72,7 @@ export default class CurrentOrder extends Component {
                   {this.state.cartItems.map((item,index)=>(
                         <ListItem
                           key={index}
+                          onPress={() => this.showFile(item.medicineName)}
                           last={this.state.cartItems.length === index+1}
                         //   onPress={() => this.itemClicked(item)}
                         >
@@ -103,6 +105,10 @@ export default class CurrentOrder extends Component {
             </Content>
       </Container>
     );
+  }
+
+  showFile = (url) =>{
+    // FileViewer.open(url)    
   }
 
   renderItems() {
