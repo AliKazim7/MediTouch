@@ -2,7 +2,7 @@
 * This is the SideMenu component used in the navbar
 **/
 
-// React native and others libraries imports
+// React native and other
 import React, { Component } from 'react';
 import { ScrollView, LayoutAnimation, UIManager, Linking, AsyncStorage } from 'react-native';
 import { View, List, ListItem, Body, Left, Right, Icon, Item, Input, Button, Grid, Col } from 'native-base';
@@ -42,6 +42,12 @@ export default class SideMenu extends Component {
     if(!this.state.subMenu) {
       return(
         <View>
+        <View style={{paddingLeft: 15, paddingRight: 15}}>
+            <Item error={this.state.searchError}>
+            <Icon style={{fontSize:100, marginLeft:'20%'}} active name='ios-people' onPress={() => this.search()} />
+            <Text>{this.state.userdata}</Text>
+            </Item>
+          </View>
           <View style={{paddingRight: 15}}>
             <List>
               <ListItem
