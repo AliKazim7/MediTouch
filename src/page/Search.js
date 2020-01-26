@@ -7,6 +7,7 @@ import React, { Component } from 'react';
 import { Container, Content, View, Header, Body, Icon, Item, Input, Thumbnail, Button, Right, Grid, Col } from 'native-base';
 import { Actions } from 'react-native-router-flux';
 
+import SearchableDropdown from 'react-native-searchable-dropdown';
 // Our custom files and classes import
 import Colors from '../Colors';
 import Text from '../component/Text';
@@ -17,7 +18,40 @@ export default class Search extends Component {
       super(props);
       this.state = {
         searchText: '',
-        items: []
+        items: [
+          {
+            id: 1,
+            name: 'JavaScript',
+          },
+          {
+            id: 2,
+            name: 'Java',
+          },
+          {
+            id: 3,
+            name: 'Ruby',
+          },
+          {
+            id: 4,
+            name: 'React Native',
+          },
+          {
+            id: 5,
+            name: 'PHP',
+          },
+          {
+            id: 6,
+            name: 'Python',
+          },
+          {
+            id: 7,
+            name: 'Go',
+          },
+          {
+            id: 8,
+            name: 'Swift',
+          },
+        ]
       };
   }
 
@@ -29,6 +63,7 @@ export default class Search extends Component {
   }
 
   render() {
+    const { search, items } = this.state
     return(
       <Container style={{backgroundColor: '#fdfdfd'}}>
         <Header
@@ -39,19 +74,52 @@ export default class Search extends Component {
           androidStatusBarColor={Colors.statusBarColor}
           noShadow={true}
         >
-            <Item>
-              <Button transparent onPress={() => Actions.pop()}>
-                <Icon name="ios-close" size={32} style={{fontSize: 32}} />
-              </Button>
-              <Input
-                placeholder="Search..."
-                value={this.state.searchText}
-                onChangeText={(text) => this.setState({searchText: text})}
-                onSubmitEditing={() => this.search(this.state.searchText)}
-                style={{marginTop: 9}}
-              />
-              <Icon name="ios-search" onPress={() => this.search(this.state.searchText)} />
-            </Item>
+        <SearchableDropdown
+        multi={true}
+        selectedItems={this.state.selectedItems}
+        onItemSelect={(item) => {
+          const items = this.state.selectedItems;
+          items.push(item)
+          this.setState({ selectedItems: items });
+        }}
+        containerStyle={{ padding: 5 }}
+        onRemoveItem={(item, index) => {
+          const items = this.state.selectedItems.filter((sitem) => sitem.id !== item.id);
+          this.setState({ selectedItems: items });
+        }}
+        itemStyle={{
+          padding: 10,
+          marginTop: 2,
+          backgroundColor: '#ddd',
+          borderColor: '#bbb',
+          borderWidth: 1,
+          borderRadius: 5,
+        }}
+        itemTextStyle={{ color: '#222' }}
+        itemsContainerStyle={{ maxHeight: 140 }}
+        items={items}
+        defaultIndex={2}
+        chip={true}
+        resetValue={false}
+        textInputProps={
+          {
+            placeholder: "placeholder",
+            underlineColorAndroid: "transparent",
+            style: {
+                padding: 12,
+                borderWidth: 1,
+                borderColor: '#ccc',
+                borderRadius: 5,
+            },
+            onTextChange: text => alert(text)
+          }
+        }
+        listProps={
+          {
+            nestedScrollEnabled: true,
+          }
+        }
+      />
           </Header>
           {this.state.items.length <=0 ?
             <View style={{flex: 1, justifyContent: 'center', alignItems: 'center'}}>

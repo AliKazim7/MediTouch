@@ -87,10 +87,8 @@ export default class Login extends Component {
                 <Text style={{color: '#fdfdfd'}}>Login</Text>
               </Button>
             </View>
-            <View style={{alignItems: 'center'}}>
-              <Button onPress={() => Actions.signup()} style={{backgroundColor: Colors.navbarBackgroundColor, marginTop: 20}}>
-                <Text style={{color: '#fdfdfd'}}>Not yet Registered?</Text>
-              </Button>
+            <View style={{alignItems: 'center', marginTop:'5%'}}>
+              <Button full transparent><Text onPress={() => Actions.signup()} style={{color: 'black'}}>New to MediTouch? Not yet Registered, Create new account</Text></Button>
             </View>
           </View>
         </Container>

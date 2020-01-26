@@ -14,11 +14,13 @@ import Newsletter from './page/Newsletter';
 import Contact from './page/Contact';
 import Category from './page/Category';
 import Product from './page/Product';
+import Search from './page/Search'
 // import ImageGallery from './page/ImageGallery';
 import Login from './page/Login';
 import Signup from './page/Signup';
 import CurrentOrder from './page/CurrentOrder'
 import Checkout from './page/Checkout';
+import DocumentPicker from './page/DocumentPicker'
 
 export default class Main extends Component {
   componentWillMount = () => {
@@ -35,9 +37,11 @@ export default class Main extends Component {
             <Scene key="login" component={Login} hideNavBar />
             <Scene key="signup" component={Signup} hideNavBar />
             <Scene key="cart" component={Cart} hideNavBar />
+            <Scene key="search" component={Search} hideNavBar />
             <Scene key="initialPage" component={initialPage} hideNavBar />
             <Scene key="approvedOrder" component={CurrentOrder} hideNavBar />
             <Scene key="checkout" component={Checkout} hideNavBar />
+            <Scene key="document" component={DocumentPicker} hideNavBar />
             <Scene key="product" component={Product} hideNavBar />
           </Scene>
         </Router>

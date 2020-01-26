@@ -42,16 +42,6 @@ export default class SideMenu extends Component {
     if(!this.state.subMenu) {
       return(
         <View>
-          <View style={{paddingLeft: 15, paddingRight: 15}}>
-            <Item error={this.state.searchError}>
-                <Input
-                  placeholder='Search...'
-                  onChangeText={(text) => this.setState({search: text, searchError: false})}
-                  onSubmitEditing={() => this.search()}
-                />
-                <Icon active name='ios-search' onPress={() => this.search()} />
-            </Item>
-          </View>
           <View style={{paddingRight: 15}}>
             <List>
               <ListItem
@@ -78,6 +68,18 @@ export default class SideMenu extends Component {
                 </Body>
                 <Right>
                   <Icon name="ios-arrow-forward" />
+                </Right>
+              </ListItem>
+              <ListItem
+                icon
+                key={1}
+                button={true}
+                onPress={() => Actions.cart()}>
+                <Body>
+                  <Text>Cart</Text>
+                </Body>
+                <Right>
+                  <Icon name="ios-cart" />
                 </Right>
               </ListItem>
               {

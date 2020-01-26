@@ -93,7 +93,7 @@ export default class Home extends Component {
         const data = querySnapshot.docs.map(doc => doc.data());
         for(var i = 0; i < data.length; i++){
             array.push({
-                medicineID:data[i].medicineID,
+                id:data[i].medicineID,
                 name:data[i].name
             })
         }
@@ -134,7 +134,7 @@ export default class Home extends Component {
     return(
       <SideMenuDrawer ref={(ref) => this._sideMenuDrawer = ref}>
           <Container>
-            <Navbar left={left} right={right} title="MediTouch" />
+            <Navbar left={left} title="MediTouch" />
             <Content>
               <CategoryBlock result={result} sendData={this.setValue} />
             </Content>

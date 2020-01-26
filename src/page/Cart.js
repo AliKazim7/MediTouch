@@ -5,7 +5,7 @@
 // React native and others libraries imports
 import React, { Component } from 'react';
 import { Alert, AsyncStorage,TouchableOpacity, ActivityIndicator } from 'react-native';
-import { Container, Content, View, Header, Icon, Button, Left, Right, Body, Title, List, ListItem, Thumbnail, Grid, Col } from 'native-base';
+import { Container, Content, View, Header, Icon, Button, Left, Right, Body, Title, List, ListItem, Thumbnail, Grid, Col, Input, Item } from 'native-base';
 import { Actions } from 'react-native-router-flux';
 import 'firebase/storage'
 // import DocumentPicker  from 'react-native-document-picker'
@@ -27,7 +27,10 @@ export default class Cart extends Component {
         singleFile:'',
         url:'',
         showLoader: false,
-        medicineData:[]
+        medicineData:[],
+        placeorder:true,
+        cartData:[],
+        quantity:''
       };
   }
 
@@ -64,6 +67,16 @@ export default class Cart extends Component {
     })
   }
 
+  componentWillReceiveProps(nextProps){
+    console.disableYellowBox = true;
+    console.log("nexxtProps",nextProps.result)
+    if(nextProps){
+      this.setState({
+        result: nextProps.result
+      })
+    }
+  }
+
   componentWillMount() {
     AsyncStorage.getItem("CART", (err, res) => {
       if (!res) this.setState({cartItems: []});
@@ -76,28 +89,19 @@ export default class Cart extends Component {
     console.log("selected medicine", this.state.medicineData)
     var left = (
       <Left style={{flex:1}}>
-        <Button transparent onPress={() => Actions.pop()}>
-          <Icon name="ios-close" size={38} style={{fontSize: 38}} />
+        <Button transparent onPress={() => Actions.home()}>
+          <Icon name="ios-backspace" size={38} style={{fontSize: 38}} />
         </Button>
       </Left>
     );
     return(
       <Container style={{backgroundColor: '#fdfdfd'}}>
-          {this.state.showLoader ? <ActivityIndicator /> : null}
           <Navbar left={left} title="Medicine List" />
-          {this.state.showfile ?
-            <View style={{flex: 1, justifyContent: 'center', alignItems: 'center'}}>
-            <Text style={styles.textStyle}>
-            File Name:{' '}
-            {this.state.singleFile.name ? this.state.singleFile.name : ''}
-            
-           </Text>
-           <Button success onPress={this.addData}>
-            <Text style={{color:'white'}}>Add to cart</Text>
-            </Button>
-            </View>
-            :
-            <Content style={{paddingRight: 10}}>
+          {this.state.showLoader ? <ActivityIndicator /> : null}
+        {
+          this.state.placeorder
+          ?
+          <Content style={{paddingRight: 10}}>
               <List>
                   {this.state.cartItems.map((item,index)=>(
                         <ListItem
@@ -120,179 +124,42 @@ export default class Cart extends Component {
                     
                   ))}
               </List>
-              <Grid style={{marginTop: 20, marginBottom: 10}}>
-                <Col style={{paddingLeft: 10,paddingRight: 5}}>
-                <TouchableOpacity
-                activeOpacity={0.5}
-                style={styles.buttonStyle}
-                onPress={() =>this.selectOneFile()}>
-                {/*Single file selection button*/}
-                <Text style={{ marginRight: 10, fontSize: 19 }}>
-                  Click here to pick one file
-                </Text>
-                
-              </TouchableOpacity>
-                </Col>
-              </Grid>
-              
-              <Grid style={{marginTop: 20, marginBottom: 10}}>
-                <Col style={{paddingLeft: 10,paddingRight: 5}}>
-                <Text style={{ marginRight: 10, fontSize: 19 }}>
-                  OR
-                </Text>
-                
-                </Col>
-              </Grid>
-
-              <Grid style={{marginTop: 20, marginBottom: 10}}>
-                <Col style={{paddingLeft: 10,paddingRight: 5}}>
-                  <Button onPress={() => this.checkout()} style={{backgroundColor: Colors.navbarBackgroundColor}} block iconLeft>
-                    <Icon name='ios-card' />
-                    <Text style={{color: '#fdfdfd'}}>Checkout</Text>
-                  </Button>
-                </Col>
-                
-              </Grid>
             </Content>
-          }
+            :
+            <Content style={{paddingRight: 10, marginTop:'10%'}}>
+              <Grid>
+              {this.state.medicineData.map((item,index)=>(
+                <View>
+                <Text style={{fontSize: 20, marginLeft:'5%'}}>
+                Medicine Name: {item.name}
+              </Text>
+              <Text style={{fontSize: 20, marginLeft:'5%'}}>
+                Medicine Price:  {item.price}
+              </Text>
+              <Text style={{fontSize: 20, marginLeft:'5%'}}>
+                Medicine Manufacture:  {item.manufacture}
+              </Text>
+              <Item regular style={{marginTop: 7}}>
+                <Input placeholder='Quantity' onChangeText={(text) => this.setState({quantity: text})} placeholderTextColor="#687373" />
+              </Item>
+                </View>
+              ))}
+              </Grid>
+                <Grid style={{marginTop: 20, marginBottom: 10}}>
+                  <Col style={{paddingLeft: 10,paddingRight: 5}}>
+                    <Button onPress={() => this.checkout()} style={{backgroundColor: Colors.navbarBackgroundColor}} block iconLeft>
+                      <Icon name='ios-cart' />
+                      <Text style={{color: '#fdfdfd'}}>Checkout</Text>
+                    </Button>
+                  </Col>
+               </Grid>
+            </Content>
+            
+        }
       </Container>
     );
   }
 
-  addData = async () =>{
-    console.log("data added", this.state.singleFile)
-    let uri = this.state.singleFile.uri
-    var result = await this.uriToBlob(uri)
-    console.log("resulted value", result)
-    var storageRef = Firebase.storage().ref();
-    storageRef.child(`users/${this.state.singleFile.name}`).put(result)
-    .then(snapshot =>{
-      // console.log("snapShot",snapshot)
-      this.dataResponse(snapshot)
-    })
-  }
-
-  dataResponse(data){
-    var storageRef = Firebase.storage().ref();
-    storageRef.child(`users/${this.state.singleFile.name}`).getDownloadURL().then(url =>{
-      console.log("url data", url)
-      this.addFile(url)
-    })
-    // .then(
-    //   resp => {
-    //     this.addFile()
-    //   }
-    // )
-    // storageRef().ref('users').child(this.state.singleFile.name).getDownloadURL().then(url =>{
-    //   console.log("url", url)
-    // })
-  }
-
-  addFile = (url) =>{
-    const db = Firebase.firestore()
-    let userRef = db.collection("orderPres").add({
-      orderStatus: "Pending",
-      userName:this.state.userdata,
-      medicineName:url,
-      userID: this.state.userdata
-     })
-     .then(res => {
-       this.addId(res)
-     })
-  }
-
-  uriToBlob = (uri) => {
-    console.log("uri to blob")
-    return new Promise((resolve, reject) => {
-
-      const xhr = new XMLHttpRequest();
-
-      xhr.onload = function() {
-        // return the blob
-        resolve(xhr.response);
-      };
-      
-      xhr.onerror = function() {
-        // something went wrong
-        reject(new Error('uriToBlob failed'));
-      };
-
-      // this helps us get a blob
-      xhr.responseType = 'blob';
-
-      xhr.open('GET', uri, true);
-      xhr.send(null);
-
-    });
-
-  }
-
-  addId = (resp) => {
-    let id = resp.id
-     
-    var db = Firebase.firestore();
-    db.collection("orderPres").where("userID", '==', this.state.userdata)
-    .get()
-    .then(function(querySnapshot){
-      querySnapshot.forEach(function(doc){
-        db.collection("orderPres")
-        .doc(doc.id)
-        .update({
-          orderID:id
-        })
-      })
-    }).then(response => this.getData(response))
-  }
-
-  getData(response){
-    console.log("response", response)
-    Actions.home()
-  }
-
-  selectOneFile = async() => {
-    console.log("here")
-    //Opening Document Picker for selection of one file
-    try {
-      const res = await DocumentPicker.pick({
-        type: [DocumentPicker.types.allFiles],
-        //There can me more options as well
-        // DocumentPicker.types.allFiles
-        // DocumentPicker.types.images
-        // DocumentPicker.types.plainText
-        // DocumentPicker.types.audio
-        // DocumentPicker.types.pdf
-      });
-      if(res){
-        FileViewer.open(res.uri).then(()=>{
-
-        })
-      }
-      //Printing the log realted to the file
-      console.log('res : ' + JSON.stringify(res));
-      console.log('URI : ' + res.uri);
-      console.log('Type : ' + res.type);
-      console.log('File Name : ' + res.name);
-      console.log('File Size : ' + res.size);
-      //Setting the state to show single file attributes
-      this.setState({ singleFile: res, showfile:true });
-    } catch (err) {
-      //Handling any exception (If any)
-      if (DocumentPicker.isCancel(err)) {
-        //If user canceled the document selection
-        alert('Canceled from single doc picker');
-      } else {
-        //For Unknown Error
-        alert('Unknown Error: ' + JSON.stringify(err));
-        throw err;
-      }
-    }
-  }
-
-  renderItems() {
-    let items = [];
-    
-    return items;
-  }
 
   removeItemPressed(item) {
     Alert.alert(
@@ -331,15 +198,16 @@ export default class Cart extends Component {
     AsyncStorage.setItem("CART",JSON.stringify([]));
   }
 
-  checkout() {
-    Actions.checkout({cartItems: this.state.medicineData});
+  checkout() {    
+    Actions.checkout({cartItems: this.state.medicineData, quantity: this.state.quantity});
   }
 
   itemClicked(item) {
     const { medicineData } = this.state;
     medicineData.push(item)
     this.setState({
-      medicineData:medicineData
+      medicineData:medicineData,
+      placeorder: false
     })
   }
 

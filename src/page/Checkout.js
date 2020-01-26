@@ -31,25 +31,27 @@ export default class Checkout extends Component {
         city: '',
         postcode: '',
         note: '',
+        quantity:1,
         arrayofMedicin:[]
       };
   }
 
   componentWillMount() {
+    console.log("props daa0", this.props)
     this.setState({cartItems: this.props.cartItems});
     var total = 0;
     const { arrayofMedicin } = this.state;
     this.props.cartItems.map((item) => {
       arrayofMedicin.push(item.name)
     });
-    this.setState({total: total, arrayofMedicin: arrayofMedicin});
+    this.setState({total: total, arrayofMedicin: arrayofMedicin, quantity: this.props.quantity});
   }
 
   render() {
     var left = (
       <Left style={{flex:1}}>
         <Button  transparent>
-          <Icon name='ios-arrow-back' />
+          <Icon onPress={() => Actions.cart()} name='ios-backspace' />
         </Button>
       </Left>
     );
@@ -62,7 +64,7 @@ export default class Checkout extends Component {
     );
     return(
       <Container style={{backgroundColor: '#fdfdfd'}}>
-        <Navbar left={left} right={right} title="CHECKOUT" />
+        <Navbar left={left} title="CHECKOUT" />
         <Content padder>
           <TouchableHighlight onPress={() => Actions.login()}>
             <View style={{flex: 1, alignItems: 'center', backgroundColor: '#6fafc4', paddingTop: 20, paddingBottom: 20}}>
@@ -107,7 +109,6 @@ export default class Checkout extends Component {
                     >
                       <Body style={{paddingLeft: 10}}>
                         <Text style={{fontSize: 18}}>
-                          {item.quantity > 1 ? item.quantity+"1 " : null}
                           {item.name}
                         </Text>
                       </Body>
@@ -124,7 +125,7 @@ export default class Checkout extends Component {
                 <Text style={{fontSize: 18, fontStyle: 'italic'}}>Total</Text>
               </Col>
               <Col>
-                <Text style={{textAlign: 'right', fontSize: 18, fontWeight: 'bold'}}>{this.state.total+"$"}</Text>
+                <Text style={{textAlign: 'right', fontSize: 18, fontWeight: 'bold'}}>{this.state.total*this.state.quantity+"$"}</Text>
               </Col>
             </Grid>
           </View>

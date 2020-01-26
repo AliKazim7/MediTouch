@@ -37,6 +37,8 @@ target 'mediTouch' do
   pod 'react-native-document-picker', :path => '../node_modules/react-native-document-picker'
 
 
+  pod 'RNVectorIcons', :path => '../node_modules/react-native-vector-icons'
+
   target 'mediTouchTests' do
     inherit! :search_paths
     # Pods for testing
